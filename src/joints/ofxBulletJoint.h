@@ -7,20 +7,17 @@
  */
 
 #pragma once
-#include "ofMain.h"
-#include "btBulletDynamicsCommon.h"
-#include "ofxBulletConstants.h"
-#include "ofxBulletUtils.h"
-#include "ofxBulletRigidBody.h"
+#include "ofxBulletJointBase.h"
 
 // creates a btGeneric6DofConstraint joint, free rotation, no constraints //
-class ofxBulletJoint {
+class ofxBulletJoint : public ofxBulletJointBase
+{
 public:
 	ofxBulletJoint();
 	~ofxBulletJoint();
-	
-	void	create( btDiscreteDynamicsWorld* a_world, ofxBulletRigidBody* a_shape1, ofxBulletRigidBody* a_shape2 );
-	void	create( btDiscreteDynamicsWorld* a_world, ofxBulletRigidBody* a_shape, glm::vec3 a_pos );
+
+	btTypedConstraint* createSpecificJoint(btRigidBody* a_shape1, btRigidBody* a_shape2, btTransform const &tr_a, btTransform const &tr_b ) override;
+	btTypedConstraint* createSpecificJoint(btRigidBody* a_shape,  btTransform const &tr ) override;
 	
 	/******************************/
 	// call before calling add() //
@@ -34,33 +31,19 @@ public:
 	void	setAngularUpperLimit( float a_x, float a_y, float a_z );
 	/******************************/
 	
-	void	add();
-	
 	glm::vec3 getPivotAWorldPos();
 	glm::vec3 getPivotBWorldPos();
 	
-	btRigidBody* getRigidBodyA() const;
-	btRigidBody* getRigidBodyB() const;
-	glm::vec3 getPositionA() const;
-	glm::vec3 getPositionB() const;
-	
 	void	updatePivotPos( const glm::vec3 a_pos, float a_length );
 	
-	void	draw();
 	void	drawJointConstraints();
 	
 	void	remove();
 	
 protected:
-	void _setDefaults();
+	void _setDefaults() override;
 	
 private:
-	btDiscreteDynamicsWorld*	_world;
 	btGeneric6DofConstraint*	_joint;
-	glm::vec3					_targetPos;
-	// is there two bodies the joint is connecting? if not, what is the target pos //
-	bool						_bTwoBodies;
-	bool						_bCreated;
-	bool						_bAdded;
 };
 

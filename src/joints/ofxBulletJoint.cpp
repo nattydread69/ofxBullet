@@ -10,10 +10,6 @@
 
 //--------------------------------------------------------------
 ofxBulletJoint::ofxBulletJoint() {
-	_bCreated		= false;
-	_bAdded			= false;
-	_bTwoBodies		= false;
-	_targetPos = glm::vec3(0, 0, 0);
 }
 
 //--------------------------------------------------------------
@@ -22,64 +18,28 @@ ofxBulletJoint::~ofxBulletJoint() {
 }
 
 //--------------------------------------------------------------
-void ofxBulletJoint::create( btDiscreteDynamicsWorld* a_world, ofxBulletRigidBody* a_shape1, ofxBulletRigidBody* a_shape2 ) {
-	_world = a_world;
-	// we should have these always influenced by the joint, so don't let them go to sleep //
-	a_shape1->setActivationState( DISABLE_DEACTIVATION );
-	a_shape2->setActivationState( DISABLE_DEACTIVATION );
-	
-	glm::vec3 diff = a_shape2->getPosition() - a_shape1->getPosition();
-    glm::quat tquat = a_shape1->getRotationQuat();
-//    diff = diff * glm::inverse( tquat );
-    diff = glm::inverse( tquat ) * diff;
-
-	btTransform frameInA = btTransform::getIdentity();
-	frameInA.setOrigin( btVector3(btScalar(-diff.x), btScalar(-diff.y), btScalar(-diff.z)) );
-	btTransform frameInB = btTransform::getIdentity();
-	frameInB.setOrigin( btVector3(btScalar(0.), btScalar(0.), btScalar(0.)) );
-	
-	_joint = new btGeneric6DofConstraint(*a_shape2->getRigidBody(), *a_shape1->getRigidBody(), frameInA, frameInB, true);
-	
-	_setDefaults();
-	
-	_bTwoBodies	= true;
-	_bCreated	= true;
+btTypedConstraint*
+ofxBulletJoint::createSpecificJoint(btRigidBody* a_shape1, btRigidBody* a_shape2, btTransform const &tr_a, btTransform const &tr_b )
+{
+	_joint = new btGeneric6DofConstraint(*a_shape2, *a_shape1, tr_a, tr_b, true);
+	return _joint;
 }
 
 //--------------------------------------------------------------
-void ofxBulletJoint::create( btDiscreteDynamicsWorld* a_world, ofxBulletRigidBody* a_shape, glm::vec3 a_pos ) {
-	_world = a_world;
-	// we should have these always influenced by the joint, so don't let them go to sleep //
-	a_shape->setActivationState( DISABLE_DEACTIVATION );
-	
-	btVector3 localPivot	= a_shape->getRigidBody()->getCenterOfMassTransform().inverse() * btVector3(a_pos.x, a_pos.y, a_pos.z);
-	btTransform tr;
-	tr.setIdentity();
-	tr.setOrigin( localPivot );
-	_joint = new btGeneric6DofConstraint(*a_shape->getRigidBody(), tr, false);
-	
-	_setDefaults();
-	
-	_targetPos = glm::vec3(a_pos.x, a_pos.y, a_pos.z);
-	_bTwoBodies = false;
-	_bCreated	= true;
+btTypedConstraint*
+ofxBulletJoint::createSpecificJoint( btRigidBody* a_shape, btTransform const &tr ) {
+
+	_joint = new btGeneric6DofConstraint(*a_shape, tr, false);
+	return _joint;
 }
 
 //--------------------------------------------------------------
 void ofxBulletJoint::_setDefaults() {
-	_joint->setParam(BT_CONSTRAINT_STOP_CFM,0.8,0);
-	_joint->setParam(BT_CONSTRAINT_STOP_CFM,0.8,1);
-	_joint->setParam(BT_CONSTRAINT_STOP_CFM,0.8,2);
-	_joint->setParam(BT_CONSTRAINT_STOP_CFM,0.8,3);
-	_joint->setParam(BT_CONSTRAINT_STOP_CFM,0.8,4);
-	_joint->setParam(BT_CONSTRAINT_STOP_CFM,0.8,5);
-	
-	_joint->setParam(BT_CONSTRAINT_STOP_ERP,0.1,0);
-	_joint->setParam(BT_CONSTRAINT_STOP_ERP,0.1,1);
-	_joint->setParam(BT_CONSTRAINT_STOP_ERP,0.1,2);
-	_joint->setParam(BT_CONSTRAINT_STOP_ERP,0.1,3);
-	_joint->setParam(BT_CONSTRAINT_STOP_ERP,0.1,4);
-	_joint->setParam(BT_CONSTRAINT_STOP_ERP,0.1,5);
+	for (unsigned i = 0; i < 6; i++)
+	{
+		_joint->setParam(BT_CONSTRAINT_STOP_CFM,0.8, i);
+		_joint->setParam(BT_CONSTRAINT_STOP_ERP,0.1, i);
+	}
 }
 
 /******************************************************/
@@ -111,12 +71,6 @@ void ofxBulletJoint::setAngularUpperLimit( float a_x, float a_y, float a_z ) {
 /******************************************************/
 
 //--------------------------------------------------------------
-void ofxBulletJoint::add() {
-	_world->addConstraint(_joint, true);
-	_bAdded = true;
-}
-
-//--------------------------------------------------------------
 void ofxBulletJoint::remove() {
 	cout << "ofxBulletJoint :: remove : " << endl;
 	_world->removeConstraint(_joint);
@@ -145,49 +99,12 @@ glm::vec3 ofxBulletJoint::getPivotBWorldPos() {
 }
 
 //--------------------------------------------------------------
-btRigidBody* ofxBulletJoint::getRigidBodyA() const {
-	return (btRigidBody*)&_joint->getRigidBodyA();
-}
-
-//--------------------------------------------------------------
-btRigidBody* ofxBulletJoint::getRigidBodyB() const {
-	return (btRigidBody*)&_joint->getRigidBodyB();
-}
-
-//--------------------------------------------------------------
-glm::vec3 ofxBulletJoint::getPositionA() const {
-	return ofGetVec3fPosFromRigidBody( getRigidBodyA() );
-}
-
-//--------------------------------------------------------------
-glm::vec3 ofxBulletJoint::getPositionB() const {
-	return ofGetVec3fPosFromRigidBody( getRigidBodyB() );
-}
-
-//--------------------------------------------------------------
 void ofxBulletJoint::updatePivotPos( const glm::vec3 a_pos, float a_length ) {
 	if(!_bCreated) {ofLog(OF_LOG_ERROR, "ofxBulletJoint :: updatePivotPos : must call create() first"); return;}
 	
 	_joint->getFrameOffsetA().setOrigin( btVector3(a_pos.x, a_pos.y, a_pos.z) );
 	
 	_targetPos = glm::vec3( a_pos.x, a_pos.y, a_pos.z );
-}
-
-//--------------------------------------------------------------
-void ofxBulletJoint::draw() {
-	if(!_bCreated) {ofLog(OF_LOG_ERROR, "ofxBulletJoint :: draw : must call create() first"); return;}
-	
-	glm::vec3 pa;
-	glm::vec3 pb;
-	
-	pb = getPositionB();
-	if(_bTwoBodies) {
-		pa = getPositionA();
-	} else {
-		pa = _targetPos;
-	}
-    
-    ofDrawLine( pa, pb );
 }
 
 //--------------------------------------------------------------
@@ -204,10 +121,4 @@ void ofxBulletJoint::drawJointConstraints() {
 	ofSetColor(0, 0, 255);
 	ofDrawSphere(pb, .5);
 }
-
-
-
-
-
-
 
