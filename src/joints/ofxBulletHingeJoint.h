@@ -16,20 +16,18 @@ class ofxBulletHingeJoint : public ofxBulletJointBase
 public:
 	ofxBulletHingeJoint();
 	~ofxBulletHingeJoint();
-
-	void createHinge(btDiscreteDynamicsWorld* a_world, btRigidBody *rbA, btRigidBody *rbB, const btVector3& pivotInA, const btVector3& pivotInB,
-			 	 	 const btVector3& axisInA, const btVector3& axisInB, bool useReferenceFrameA = false);
-	// TODO:
-	//btHingeConstraint(btRigidBody & rbA, btRigidBody & rbB, const btVector3& pivotInA, const btVector3& pivotInB,
-		//	  const btVector3& axisInA, const btVector3& axisInB, bool useReferenceFrameA = false);
-	btTypedConstraint* createSpecificJoint(btRigidBody* a_shape1, btRigidBody* a_shape2, btTransform const &tr_a, btTransform const &tr_b ) override;
-	btTypedConstraint* createSpecificJoint(btRigidBody* a_shape, btTransform const &tr ) override;
+	void createHinge(btDiscreteDynamicsWorld* a_world, ofxBulletRigidBody* body1, ofxBulletRigidBody* body2, btTransform const &tr_a, btTransform const &tr_b);
+	void createHinge(btDiscreteDynamicsWorld* a_world, ofxBulletRigidBody* body1, ofxBulletRigidBody* body2,
+	                 const glm::vec3& pivotInA, const glm::vec3& pivotInB,
+	                 const glm::vec3& axisInA, const glm::vec3& axisInB, bool useReferenceFrameA = false);
 	
 	void add() override;
 	void remove();
 	void draw() override;
 	void setLimits(float const low, float const high);
 protected:
+	btTypedConstraint* createSpecificJoint(btRigidBody* a_shape1, btRigidBody* a_shape2, btTransform const &tr_a, btTransform const &tr_b ) override;
+	btTypedConstraint* createSpecificJoint(btRigidBody* a_shape, btTransform const &tr ) override;
 	void _setDefaults() override;
 	
 private:

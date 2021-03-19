@@ -18,40 +18,57 @@ ofxBulletHingeJoint::~ofxBulletHingeJoint() {
 	remove();
 }
 
+//---------------------------------------------------------------------------------------------------------------------------
 void
 ofxBulletHingeJoint::
-createHinge(btDiscreteDynamicsWorld* a_world, btRigidBody *rbA, btRigidBody *rbB, const btVector3& pivotInA, const btVector3& pivotInB,
-	 	 	const btVector3& axisInA, const btVector3& axisInB, bool useReferenceFrameA )
+createHinge(btDiscreteDynamicsWorld* a_world, ofxBulletRigidBody* body1, ofxBulletRigidBody* body2, const glm::vec3& pivotInA, const glm::vec3& pivotInB,
+	 	 	const glm::vec3& axisInA, const glm::vec3& axisInB, bool useReferenceFrameA )
 {
-	std::cout << "ofxBulletHingeJoint::createHinge" << std::endl;
+	btVector3 pA(pivotInA.x, pivotInA.y, pivotInA.z);
+	btVector3 pB(pivotInB.x, pivotInB.y, pivotInB.z);
+	btVector3 axA(axisInA.x, axisInA.y, axisInA.z);
+	btVector3 axB(axisInB.x, axisInB.y, axisInB.z);
+
 	_world = a_world;
-	_joint = new btHingeConstraint(*rbA, *rbB, pivotInA, pivotInB, axisInA, axisInB, useReferenceFrameA);
+	_joint = new btHingeConstraint(*body1->getRigidBody(), *body2->getRigidBody(), pA, pB, axA, axB, useReferenceFrameA);
 
 	// _joint->setAngularOnly(true); // this has the effect of disconnecting the hinge
 
 	_baseJoint = _joint;
-	std::cout << "created Hinge" << std::endl;
 
-	rbA->setActivationState( DISABLE_DEACTIVATION );
-	rbB->setActivationState( DISABLE_DEACTIVATION );
+	body1->getRigidBody()->setActivationState( DISABLE_DEACTIVATION );
+	body2->getRigidBody()->setActivationState( DISABLE_DEACTIVATION );
 
+	_pivotA = pivotInA;
+	_pivotB = pivotInB;
 	_bTwoBodies = true;
 	_bCreated	= true;
-	_pivotA = glm::vec3( pivotInA.getX(), pivotInA.getY(), pivotInA.getZ());
-	_pivotB = glm::vec3( pivotInB.getX(), pivotInB.getY(), pivotInB.getZ());
 	_hasPivots = true;
 	_pivotPoint = (getPositionA() + getPositionB())/2.0f;
 
 	_setDefaults();
-	std::cout << "END ofxBulletHingeJoint::createHinge" << std::endl;
+}
+//---------------------------------------------------------------------------------------------------------------------------
+void
+ofxBulletHingeJoint::createHinge(btDiscreteDynamicsWorld* a_world, ofxBulletRigidBody* body1, ofxBulletRigidBody* body2, btTransform const &tr_a, btTransform const &tr_b ) {
+
+	_world = a_world;
+	_joint = new btHingeConstraint(*body1->getRigidBody(), *body2->getRigidBody(), tr_a, tr_b, true);
+
+	body1->setActivationState( DISABLE_DEACTIVATION );
+	body2->setActivationState( DISABLE_DEACTIVATION );
+
+	_baseJoint = _joint;
+	_bTwoBodies = true;
+	_bCreated	= true;
+	_setDefaults();
 }
 //--------------------------------------------------------------
 btTypedConstraint*
 ofxBulletHingeJoint::createSpecificJoint(btRigidBody* a_shape1, btRigidBody* a_shape2, btTransform const &tr_a, btTransform const &tr_b ) {
-	_joint = new btHingeConstraint(*a_shape2, *a_shape1, tr_a, tr_b, true);
+	_joint = new btHingeConstraint(*a_shape1, *a_shape2, tr_a, tr_b, true);
 	return _joint;
 }
-
 //--------------------------------------------------------------
 btTypedConstraint*
 ofxBulletHingeJoint::createSpecificJoint(btRigidBody* a_shape, btTransform const &tr ) {
@@ -61,7 +78,6 @@ ofxBulletHingeJoint::createSpecificJoint(btRigidBody* a_shape, btTransform const
 
 //--------------------------------------------------------------
 void ofxBulletHingeJoint::remove() {
-	cout << "ofxBulletHingeJoint :: remove : " << endl;
 	_world->removeConstraint(_joint);
 	delete _joint;
 	_joint = nullptr;

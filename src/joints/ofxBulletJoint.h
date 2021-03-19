@@ -16,9 +16,6 @@ public:
 	ofxBulletJoint();
 	~ofxBulletJoint();
 
-	btTypedConstraint* createSpecificJoint(btRigidBody* a_shape1, btRigidBody* a_shape2, btTransform const &tr_a, btTransform const &tr_b ) override;
-	btTypedConstraint* createSpecificJoint(btRigidBody* a_shape,  btTransform const &tr ) override;
-	
 	/******************************/
 	// call before calling add() //
 	void	setLinearLowerLimit( glm::vec3 a_limit );
@@ -41,6 +38,8 @@ public:
 	void	remove();
 	
 protected:
+	btTypedConstraint* createSpecificJoint(btRigidBody* a_shape1, btRigidBody* a_shape2, btTransform const &tr_a, btTransform const &tr_b ) override;
+	btTypedConstraint* createSpecificJoint(btRigidBody* a_shape,  btTransform const &tr ) override;
 	void _setDefaults() override;
 	
 private:

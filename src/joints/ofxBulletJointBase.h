@@ -19,9 +19,6 @@ class ofxBulletJointBase
 {
 public:
 	virtual ~ofxBulletJointBase();
-
-	virtual btTypedConstraint* createSpecificJoint( btRigidBody* a_shape1, btRigidBody* a_shape2, btTransform const &tr_a, btTransform const &tr_b ) 	= 0;
-	virtual btTypedConstraint* createSpecificJoint( btRigidBody* a_shape, btTransform const &tr) 														= 0;
 	virtual void _setDefaults() = 0;
 
 	void	create( btDiscreteDynamicsWorld* a_world, ofxBulletRigidBody* a_shape1, ofxBulletRigidBody* a_shape2 );
@@ -40,6 +37,9 @@ public:
 	btDiscreteDynamicsWorld*	_world;
 protected:
 	ofxBulletJointBase();
+	virtual btTypedConstraint* createSpecificJoint( btRigidBody* a_shape1, btRigidBody* a_shape2,
+	                                                btTransform const &tr_a, btTransform const &tr_b ) 	= 0;
+	virtual btTypedConstraint* createSpecificJoint( btRigidBody* a_shape, btTransform const &tr) = 0;
 
 
 	glm::vec3					_targetPos;
