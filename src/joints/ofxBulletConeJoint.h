@@ -17,6 +17,8 @@ public:
 	ofxBulletConeJoint();
 	~ofxBulletConeJoint();
 
+	void createCone(btDiscreteDynamicsWorld* a_world, ofxBulletRigidBody* body1, ofxBulletRigidBody* body2, btTransform const &tr_a, btTransform const &tr_b );
+
 	btTypedConstraint* createSpecificJoint(btRigidBody* a_shape1, btRigidBody* a_shape2, btTransform const &tr_a, btTransform const &tr_b ) override;
 	btTypedConstraint* createSpecificJoint(btRigidBody* a_shape, btTransform const &tr ) override;
 	

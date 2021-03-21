@@ -17,7 +17,21 @@ ofxBulletConeJoint::ofxBulletConeJoint()
 ofxBulletConeJoint::~ofxBulletConeJoint() {
 	remove();
 }
+//---------------------------------------------------------------------------------------------------------------------------
+void
+ofxBulletConeJoint::createCone(btDiscreteDynamicsWorld* a_world, ofxBulletRigidBody* body1, ofxBulletRigidBody* body2, btTransform const &tr_a, btTransform const &tr_b ) {
 
+	_world = a_world;
+	_joint = new btConeTwistConstraint(*body1->getRigidBody(), *body2->getRigidBody(), tr_a, tr_b);
+
+	body1->setActivationState( DISABLE_DEACTIVATION );
+	body2->setActivationState( DISABLE_DEACTIVATION );
+
+	_baseJoint = _joint;
+	_bTwoBodies = true;
+	_bCreated	= true;
+	_setDefaults();
+}
 //--------------------------------------------------------------
 btTypedConstraint*
 ofxBulletConeJoint::createSpecificJoint(btRigidBody* a_shape1, btRigidBody* a_shape2, btTransform const &tr_a, btTransform const &tr_b ) {
