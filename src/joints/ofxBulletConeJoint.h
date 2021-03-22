@@ -24,7 +24,7 @@ public:
 	
 	void add() override;
 	void remove();
-	void setLimits(float const low, float const high);
+	void setLimits(float const swing1, float const swing2, float const twist);
 protected:
 	void _setDefaults() override;
 	

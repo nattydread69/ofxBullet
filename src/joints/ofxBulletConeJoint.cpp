@@ -66,8 +66,8 @@ void ofxBulletConeJoint::_setDefaults() {
     _joint->setLimit( low, high );
 }
 //--------------------------------------------------------------
-void ofxBulletConeJoint::setLimits(float const low, float const high) {
-	_joint->setLimit( low, high );
+void ofxBulletConeJoint::setLimits(float const swing1, float const swing2, float const twist) {
+	_joint->setLimit( swing1, swing2, twist );
 }
 //--------------------------------------------------------------
 
